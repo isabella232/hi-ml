@@ -220,10 +220,10 @@ class TilesDataModule(HistoDataModule[TilesDataset]):
         return self._get_dataloader(self.train_dataset, "train", shuffle=True, **self.dataloader_kwargs)
 
     def val_dataloader(self) -> DataLoader:
-        return self._get_dataloader(self.val_dataset, "val", shuffle=True, **self.dataloader_kwargs)
+        return self._get_dataloader(self.val_dataset, "val", shuffle=False, **self.dataloader_kwargs)
 
     def test_dataloader(self) -> DataLoader:
-        return self._get_dataloader(self.test_dataset, "test", shuffle=True, **self.dataloader_kwargs)
+        return self._get_dataloader(self.test_dataset, "test", shuffle=False, **self.dataloader_kwargs)
 
 
 class SlidesDataModule(HistoDataModule[SlidesDataset]):
@@ -321,7 +321,7 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
         return self._get_dataloader(self.train_dataset, shuffle=True, **self.dataloader_kwargs)
 
     def val_dataloader(self) -> DataLoader:
-        return self._get_dataloader(self.val_dataset, shuffle=True, **self.dataloader_kwargs)
+        return self._get_dataloader(self.val_dataset, shuffle=False, **self.dataloader_kwargs)
 
     def test_dataloader(self) -> DataLoader:
-        return self._get_dataloader(self.test_dataset, shuffle=True, **self.dataloader_kwargs)
+        return self._get_dataloader(self.test_dataset, shuffle=False, **self.dataloader_kwargs)

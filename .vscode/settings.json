@@ -81,5 +81,4 @@
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
-    "python.linting.mypyPath": "/home/t-kbouzid/miniconda3/envs/himl/bin/mypy",
 }

@@ -122,9 +122,13 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
             tile_count=60,
             # declared in DatasetParams:
             local_datasets=[Path("/tmp/datasets/PANDA")],
-            azure_datasets=["PANDA"])
+            azure_datasets=["PANDA"],
+            batch_size=4)
         default_kwargs.update(kwargs)
         super().__init__(**default_kwargs)
+
+    def get_dataloader_kwargs(self) -> dict:
+        return dict(num_workers=6, pin_memory=True)
 
     def setup(self) -> None:
         if self.encoder_type == SSLEncoder.__name__:

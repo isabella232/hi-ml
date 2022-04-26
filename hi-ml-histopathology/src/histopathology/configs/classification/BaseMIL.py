@@ -327,7 +327,7 @@ class BaseMILSlides(BaseMIL):
         self.data_module = self.get_data_module()
         pooling_layer, num_features = self.get_pooling_layer()
         # We leave the outputs handler out for now (wsi datamodule doesn't support tiles coordinates YET)
-        deepmil_module = SlidesDeepMILModule(tiles_count=self.tile_count,
+        deepmil_module = SlidesDeepMILModule(tile_count=self.tile_count,
                                              encoder=self.get_model_encoder(),
                                              label_column=SlideKey.LABEL,
                                              n_classes=self.data_module.train_dataset.N_CLASSES,

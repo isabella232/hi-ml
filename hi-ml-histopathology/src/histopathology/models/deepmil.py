@@ -308,8 +308,8 @@ class TilesDeepMILModule(BaseDeepMILModule):
 
 class SlidesDeepMILModule(BaseDeepMILModule):
     """Base class for slides based deep multiple-instance learning."""
-    def __init__(self, tiles_count: int, **kwargs: Any) -> None:
-        self.tiles_count = tiles_count
+    def __init__(self, tile_count: int, **kwargs: Any) -> None:
+        self.tile_count = tile_count
         super().__init__(**kwargs)
 
     @staticmethod
@@ -319,6 +319,6 @@ class SlidesDeepMILModule(BaseDeepMILModule):
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:
         # WARNING: This is a dummy input until we figure out tiles coordinates retrieval in the next iteration.
-        results.update({ResultsKey.SLIDE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tiles_count],
-                        ResultsKey.TILE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tiles_count],
-                        ResultsKey.IMAGE_PATH: [batch[SlideKey.IMAGE_PATH] * self.tiles_count]})
+        results.update({ResultsKey.SLIDE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tile_count],
+                        ResultsKey.TILE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tile_count],
+                        ResultsKey.IMAGE_PATH: [batch[SlideKey.IMAGE_PATH] * self.tile_count]})

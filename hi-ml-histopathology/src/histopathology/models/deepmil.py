@@ -12,7 +12,7 @@ from torch import Tensor, argmax, mode, nn, optim, round, set_grad_enabled
 from torchmetrics import AUROC, F1, Accuracy, ConfusionMatrix, Precision, Recall
 
 from health_ml.utils import log_on_epoch
-from histopathology.datasets.base_dataset import SlidesDataset, TilesDataset
+from histopathology.datasets.base_dataset import TilesDataset
 from histopathology.models.encoders import TileEncoder
 from histopathology.utils.naming import MetricsKey, ResultsKey, SlideKey
 from histopathology.utils.output_utils import (BatchResultsType, DeepMILOutputsHandler, EpochResultsType,
@@ -45,7 +45,8 @@ class BaseDeepMILModule(LightningModule):
                  verbose: bool = False,
                  class_names: Optional[Sequence[str]] = None,
                  is_finetune: bool = False,
-                 outputs_handler: Optional[DeepMILOutputsHandler] = None) -> None:
+                 outputs_handler: Optional[DeepMILOutputsHandler] = None,
+                 tile_count: int = 60) -> None:
         """
         :param label_column: Label key for input batch dictionary.
         :param n_classes: Number of output classes for MIL prediction. For binary classification, n_classes should be
@@ -76,6 +77,7 @@ class BaseDeepMILModule(LightningModule):
         self.encoder = encoder
         self.aggregation_fn = pooling_layer
         self.num_pooling = num_features
+        self.tile_count = tile_count
 
         self.class_names = validate_class_names(class_names, self.n_classes)
 
@@ -83,8 +85,6 @@ class BaseDeepMILModule(LightningModule):
         self.l_rate = l_rate
         self.weight_decay = weight_decay
         self.adam_betas = adam_betas
-
-        self.save_hyperparameters()
 
         self.verbose = verbose
 
@@ -194,7 +194,7 @@ class BaseDeepMILModule(LightningModule):
             bag_labels_list.append(self.get_bag_label(labels))
             logit, attn = self(images)
             bag_logits_list.append(logit.view(-1))
-            bag_attn_list.append(attn)
+            bag_attn_list.append(attn.view(-1))
         bag_logits = torch.stack(bag_logits_list)
         bag_labels = torch.stack(bag_labels_list).view(-1)
         return bag_logits, bag_labels, bag_attn_list
@@ -308,10 +308,9 @@ class TilesDeepMILModule(BaseDeepMILModule):
 
 class SlidesDeepMILModule(BaseDeepMILModule):
     """Base class for slides based deep multiple-instance learning."""
-    def __init__(self, tile_count: int, **kwargs: Any) -> None:
-        self.tile_count = tile_count
-        super().__init__(**kwargs)
-
+    # def __init__(self, tile_count: int, **kwargs: Any) -> None:
+    #     self.tile_count = tile_count
+    #     super().__init__(**kwargs)
     @staticmethod
     def get_bag_label(labels: Tensor) -> Tensor:
         # SlidesDataModule attributes a single label to a bag of tiles already no need to do majority voting
@@ -319,6 +318,16 @@ class SlidesDeepMILModule(BaseDeepMILModule):
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:
         # WARNING: This is a dummy input until we figure out tiles coordinates retrieval in the next iteration.
-        results.update({ResultsKey.SLIDE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tile_count],
-                        ResultsKey.TILE_ID: [batch[SlidesDataset.SLIDE_ID_COLUMN] * self.tile_count],
-                        ResultsKey.IMAGE_PATH: [batch[SlideKey.IMAGE_PATH] * self.tile_count]})
+        results.update(
+            {
+                ResultsKey.SLIDE_ID: [
+                    [slide_id] * self.tile_count for slide_id in batch[SlideKey.SLIDE_ID]
+                ],
+                ResultsKey.TILE_ID: [
+                    [f"_{tile_id}" for tile_id in range(self.tile_count)] for _ in batch[SlideKey.SLIDE_ID]
+                ],
+                ResultsKey.IMAGE_PATH: [
+                    [img_path] * self.tile_count for img_path in batch[SlideKey.IMAGE_PATH]
+                ],
+            }
+        )

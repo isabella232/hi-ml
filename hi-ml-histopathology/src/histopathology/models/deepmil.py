@@ -88,6 +88,8 @@ class BaseDeepMILModule(LightningModule):
 
         self.verbose = verbose
 
+        self.save_hyperparameters()
+
         # Finetuning attributes
         self.is_finetune = is_finetune
 

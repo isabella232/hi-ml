@@ -129,7 +129,7 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
         super().__init__(**default_kwargs)
 
     def get_dataloader_kwargs(self) -> dict:
-        return dict(num_workers=self.batch_size, pin_memory=True)
+        return dict(num_workers=2, pin_memory=True)
 
     def setup(self) -> None:
         if self.encoder_type == SSLEncoder.__name__:

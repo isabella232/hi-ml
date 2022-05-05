@@ -5,7 +5,6 @@
 
 from pathlib import Path
 from typing import Mapping, Sequence, Union, Callable, Dict
-import logging
 import torch
 import numpy as np
 import PIL
@@ -98,20 +97,23 @@ class LoadTiled(MapTransform):
 class TimerTransform(MapTransform):
     """Dictionary transform to load an individual image tile as a tensor from an input path"""
 
-    def __init__(self, keys: KeysCollection, allow_missing_keys: bool = False, print_str: str = "") -> None:
+    def __init__(self, keys: KeysCollection, allow_missing_keys: bool = False) -> None:
         """
         :param keys: Key(s) for the image path(s) in the input dictionary.
         :param allow_missing_keys: If `False` (default), raises an exception when an input
         dictionary is missing any of the specified keys.
         """
-        self.print_str = print_str
+        self.time_key = keys
         super().__init__(keys, allow_missing_keys)
 
     def __call__(self, data: Mapping) -> Mapping:
-        start = data["time"] if "time" in data else timer()
+        if "time" not in data:
+            data[self.time_key] = []
+            data["time"] = timer()
+        start = data["time"]
         data["time"] = timer()
         elapsed = timedelta(seconds=data["time"] - start)
-        logging.info(f"{self.print_str} took {elapsed}")
+        data[self.time_key].append(elapsed)
         return data
 
 

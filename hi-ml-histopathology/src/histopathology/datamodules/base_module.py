@@ -281,7 +281,7 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
     def _load_dataset(self, slides_dataset: SlidesDataset) -> Dataset:
         base_transform = Compose(
             [
-                TimerTransform(keys=slides_dataset.IMAGE_COLUMN, print_str="no-op"),
+                TimerTransform(keys="no-op"),
                 LoadImaged(
                     keys=slides_dataset.IMAGE_COLUMN,
                     reader=WSIReader,
@@ -290,7 +290,7 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
                     level=self.level,
                     image_only=True,
                 ),
-                TimerTransform(keys=slides_dataset.IMAGE_COLUMN, print_str="LoadImaged"),
+                TimerTransform(keys="LoadImaged"),
                 TileOnGridd(
                     keys=slides_dataset.IMAGE_COLUMN,
                     tile_count=self.tile_count,
@@ -302,7 +302,7 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
                     filter_mode=self.filter_mode,
                     return_list_of_dicts=True,
                 ),
-                TimerTransform(keys=slides_dataset.IMAGE_COLUMN, print_str="TileOnGridd"),
+                TimerTransform(keys="TileOnGridd"),
             ]
         )
         transforms = Compose([base_transform, self.transform]).flatten() if self.transform else base_transform

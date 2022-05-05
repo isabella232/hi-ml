@@ -11,7 +11,7 @@ import torch
 from pytorch_lightning import LightningModule
 from torch import Tensor, argmax, mode, nn, optim, round, set_grad_enabled
 from torchmetrics import AUROC, F1, Accuracy, ConfusionMatrix, Precision, Recall
-
+import numpy as np
 from timeit import default_timer as timer
 from datetime import timedelta
 
@@ -206,6 +206,8 @@ class BaseDeepMILModule(LightningModule):
         bag_labels = torch.stack(bag_labels_list).view(-1)
         end = timer()
         logging.info(f"compute_bag_labels_logits_and_attn_maps took {timedelta(seconds=end-start)}")
+        logging.info(f"LoadImaged took {np.mean(batch['LoadImaged'])}")
+        logging.info(f"TileOnGridd took {np.mean(batch['TileOnGridd'])}")
         return bag_logits, bag_labels, bag_attn_list
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:

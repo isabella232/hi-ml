@@ -3,6 +3,7 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
+import logging
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 from pytorch_lightning.utilities.warnings import rank_zero_warn
 
@@ -10,6 +11,9 @@ import torch
 from pytorch_lightning import LightningModule
 from torch import Tensor, argmax, mode, nn, optim, round, set_grad_enabled
 from torchmetrics import AUROC, F1, Accuracy, ConfusionMatrix, Precision, Recall
+
+from timeit import default_timer as timer
+from datetime import timedelta
 
 from health_ml.utils import log_on_epoch
 from histopathology.datasets.base_dataset import TilesDataset
@@ -187,6 +191,7 @@ class BaseDeepMILModule(LightningModule):
         # This means we can't stack them along a new axis without padding to the same length.
         # We could alternatively concatenate them, but this would require other changes (e.g. in
         # the attention layers) to correctly split the tensors by bag/slide ID.
+        start = timer()
         bag_labels_list = []
         bag_logits_list = []
         bag_attn_list = []
@@ -199,6 +204,8 @@ class BaseDeepMILModule(LightningModule):
             bag_attn_list.append(attn.view(-1))
         bag_logits = torch.stack(bag_logits_list)
         bag_labels = torch.stack(bag_labels_list).view(-1)
+        end = timer()
+        logging.info(f"compute_bag_labels_logits_and_attn_maps took {timedelta(seconds=end-start)}")
         return bag_logits, bag_labels, bag_attn_list
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:

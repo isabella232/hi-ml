@@ -5,13 +5,16 @@
 
 from pathlib import Path
 from typing import Mapping, Sequence, Union, Callable, Dict
-
+import logging
 import torch
 import numpy as np
 import PIL
 from monai.config.type_definitions import KeysCollection
 from monai.transforms.transform import MapTransform, Randomizable
 from torchvision.transforms.functional import to_tensor
+
+from timeit import default_timer as timer
+from datetime import timedelta
 
 from histopathology.models.encoders import TileEncoder
 
@@ -90,6 +93,26 @@ class LoadTiled(MapTransform):
         for key in self.key_iterator(out_data):
             out_data[key] = load_image_as_tensor(data[key])
         return out_data
+
+
+class TimerTransform(MapTransform):
+    """Dictionary transform to load an individual image tile as a tensor from an input path"""
+
+    def __init__(self, keys: KeysCollection, allow_missing_keys: bool = False, print_str: str = "") -> None:
+        """
+        :param keys: Key(s) for the image path(s) in the input dictionary.
+        :param allow_missing_keys: If `False` (default), raises an exception when an input
+        dictionary is missing any of the specified keys.
+        """
+        self.print_str = print_str
+        super().__init__(keys, allow_missing_keys)
+
+    def __call__(self, data: Mapping) -> Mapping:
+        start = data["time"] if "time" in data else timer()
+        data["time"] = timer()
+        elapsed = timedelta(seconds=data["time"] - start)
+        logging.info(f"{self.print_str} took {elapsed}")
+        return data
 
 
 class LoadTilesBatchd(MapTransform):

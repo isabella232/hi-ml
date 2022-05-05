@@ -119,7 +119,7 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
             # declared in BaseMILSlides:
             # N.B: For the moment we only support running the pipeline with a fixed tile_count.
             # Padding to the same shape or collating to a List of Tensors  will be adressed in another PR.
-            tile_count=60,
+            tile_count=44,
             level=1,
             # declared in DatasetParams:
             local_datasets=[Path("/tmp/datasets/PANDA")],
@@ -128,8 +128,8 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
         default_kwargs.update(kwargs)
         super().__init__(**default_kwargs)
 
-    # def get_dataloader_kwargs(self) -> dict:
-    #     return dict(num_workers=6, pin_memory=True)
+    def get_dataloader_kwargs(self) -> dict:
+        return dict(num_workers=self.batch_size, pin_memory=True)
 
     def setup(self) -> None:
         if self.encoder_type == SSLEncoder.__name__:

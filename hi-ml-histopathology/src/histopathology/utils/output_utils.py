@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import logging
 from ruamel.yaml import YAML
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.metric import Metric
@@ -118,7 +119,7 @@ def collate_results_on_cpu(epoch_results: EpochResultsType) -> ResultsType:
 
 
 def save_outputs_csv(results: ResultsType, outputs_dir: Path) -> None:
-    print("Saving outputs ...")
+    logging.info("Saving outputs ...")
     # collate at slide level
     list_slide_dicts: List[Dict[ResultsKey, Any]] = []
     # any column can be used here, the assumption is that the first dimension is the N of slides
@@ -128,7 +129,7 @@ def save_outputs_csv(results: ResultsType, outputs_dir: Path) -> None:
         list_slide_dicts.append(slide_dict)
 
     assert outputs_dir.is_dir(), f"No such dir: {outputs_dir}"
-    print(f"Metrics results will be output to {outputs_dir}")
+    logging.info(f"Metrics results will be output to {outputs_dir}")
     csv_filename = outputs_dir / OUTPUTS_CSV_FILENAME
 
     # Collect the list of dictionaries in a list of pandas dataframe and save
@@ -148,7 +149,7 @@ def save_features(results: ResultsType, outputs_dir: Path) -> None:
 
 def save_top_and_bottom_tiles(results: ResultsType, n_classes: int, figures_dir: Path) \
         -> Dict[str, List[str]]:
-    print("Selecting tiles ...")
+    logging.info("Selecting tiles ...")
 
     def select_k_tiles_from_results(label: int, select: Tuple[str, str]) \
             -> List[Tuple[Any, Any, List, List]]:
@@ -174,7 +175,7 @@ def save_top_and_bottom_tiles(results: ResultsType, n_classes: int, figures_dir:
 
     selected_slide_ids: Dict[str, List[str]] = {}
     for key in report_cases.keys():
-        print(f"Plotting {key} (tiles, thumbnails, attention heatmaps)...")
+        logging.info(f"Plotting {key} (tiles, thumbnails, attention heatmaps)...")
         key_dir = figures_dir / key
         key_dir.mkdir(parents=True, exist_ok=True)
 
@@ -197,7 +198,7 @@ def save_top_and_bottom_tiles(results: ResultsType, n_classes: int, figures_dir:
 def save_slide_thumbnails_and_heatmaps(results: ResultsType, selected_slide_ids: Dict[str, List[str]], tile_size: int,
                                        level: int, slides_dataset: SlidesDataset, figures_dir: Path) -> None:
     for key in selected_slide_ids:
-        print(f"Plotting {key} (tiles, thumbnails, attention heatmaps)...")
+        logging.info(f"Plotting {key} (tiles, thumbnails, attention heatmaps)...")
         key_dir = figures_dir / key
         key_dir.mkdir(parents=True, exist_ok=True)
         for slide_id in selected_slide_ids[key]:
@@ -223,17 +224,17 @@ def save_slide_thumbnail_and_heatmap(results: ResultsType, slide_id: str, tile_s
 
 
 def save_scores_histogram(results: ResultsType, figures_dir: Path) -> None:
-    print("Plotting histogram ...")
+    logging.info("Plotting histogram ...")
     fig = plot_scores_hist(results)
     save_figure(fig=fig, figpath=figures_dir / 'hist_scores.png')
 
 
 def save_confusion_matrix(conf_matrix_metric: ConfusionMatrix, class_names: Sequence[str], figures_dir: Path) -> None:
-    print("Computing and saving confusion matrix...")
+    logging.info("Computing and saving confusion matrix...")
     cf_matrix = conf_matrix_metric.compute().cpu().numpy()
-    #  We can't log tensors in the normal way - just print it to console
-    print('test/confusion matrix:')
-    print(cf_matrix)
+    #  We can't log tensors in the normal way - just logging.info it to console
+    logging.info('test/confusion matrix:')
+    logging.info(cf_matrix)
     #  Save the normalized confusion matrix as a figure in outputs
     cf_matrix_n = cf_matrix / cf_matrix.sum(axis=1, keepdims=True)
     fig = plot_normalized_confusion_matrix(cm=cf_matrix_n, class_names=(class_names))
@@ -390,7 +391,7 @@ class DeepMILOutputsHandler:
 
         save_outputs_csv(results, outputs_dir)
 
-        # print("Selecting tiles ...")
+        # logging.info("Selecting tiles ...")
         # selected_slide_ids = save_top_and_bottom_tiles(results, n_classes=self.n_classes, figures_dir=figures_dir)
 
         # if self.slides_dataset is not None:

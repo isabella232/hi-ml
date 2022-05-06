@@ -12,8 +12,7 @@ from monai.config.type_definitions import KeysCollection
 from monai.transforms.transform import MapTransform, Randomizable
 from torchvision.transforms.functional import to_tensor
 
-from timeit import default_timer as timer
-from datetime import timedelta
+import time
 
 from histopathology.models.encoders import TileEncoder
 
@@ -108,12 +107,12 @@ class TimerTransform(MapTransform):
 
     def __call__(self, data: Mapping) -> Mapping:
         if "time" not in data:
+            data["time"] = time.time()
+        if self.time_key not in data:
             data[self.time_key] = []
-            data["time"] = timer()
-        start = data["time"]
-        data["time"] = timer()
-        elapsed = timedelta(seconds=data["time"] - start)
-        data[self.time_key].append(elapsed)
+
+        data[self.time_key].append(time.time() - data["time"])
+        data["time"] = time.time()
         return data
 
 

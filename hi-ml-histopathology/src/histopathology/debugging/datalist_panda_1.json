@@ -1,0 +1,64 @@
+{
+    "training": [
+        {
+            "image": "0005f7aaab2800f6170c399693a96917.tiff",
+            "label": 0
+        },
+        {
+            "image": "001c62abd11fa4b57bf7a6c603a11bb9.tiff",
+            "label": 4
+        },
+        {
+            "image": "002a4db09dad406c85505a00fb6f6144.tiff",
+            "label": 0
+        },
+        {
+            "image": "003046e27c8ead3e3db155780dc5498e.tiff",
+            "label": 1
+        },
+        {
+            "image": "01227af585a47c16680f927d21a7f06a.tiff",
+            "label": 1
+        },
+        {
+            "image": "0125392d1963a6b69a37f9e30333d68a.tiff",
+            "label": 2
+        },
+        {
+            "image": "00412139e6b04d1e1cee8421f38f6e90.tiff",
+            "label": 0
+        },
+        {
+            "image": "010dea54bfd0a4a1eb1c0719949bb4a4.tiff",
+            "label": 5
+        },
+        {
+            "image": "010f9df31ea44191c106d8226eaf46fb.tiff",
+            "label": 3
+        },
+        {
+            "image": "011d38d07a0d228d2d3f8433ff483738.tiff",
+            "label": 1
+        }    
+    ],
+    "validation": [        {
+        "image": "0125392d1963a6b69a37f9e30333d68a.tiff",
+        "label": 2
+    },
+    {
+        "image": "00412139e6b04d1e1cee8421f38f6e90.tiff",
+        "label": 0
+    },
+    {
+        "image": "010dea54bfd0a4a1eb1c0719949bb4a4.tiff",
+        "label": 5
+    },
+    {
+        "image": "010f9df31ea44191c106d8226eaf46fb.tiff",
+        "label": 3
+    },
+    {
+        "image": "011d38d07a0d228d2d3f8433ff483738.tiff",
+        "label": 1
+    }]
+}

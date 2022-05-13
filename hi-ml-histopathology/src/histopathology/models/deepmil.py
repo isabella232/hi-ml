@@ -11,9 +11,7 @@ import torch
 from pytorch_lightning import LightningModule
 from torch import Tensor, argmax, mode, nn, optim, round, set_grad_enabled
 from torchmetrics import AUROC, F1, Accuracy, ConfusionMatrix, Precision, Recall
-import numpy as np
-from timeit import default_timer as timer
-from datetime import timedelta
+import time
 
 from health_ml.utils import log_on_epoch
 from histopathology.datasets.base_dataset import TilesDataset
@@ -191,12 +189,12 @@ class BaseDeepMILModule(LightningModule):
         # This means we can't stack them along a new axis without padding to the same length.
         # We could alternatively concatenate them, but this would require other changes (e.g. in
         # the attention layers) to correctly split the tensors by bag/slide ID.
-        start = timer()
+        # start = time.time()
         bag_labels_list = []
         bag_logits_list = []
         bag_attn_list = []
         for bag_idx in range(len(batch[self.label_column])):
-            images = batch[TilesDataset.IMAGE_COLUMN][bag_idx]
+            images = batch[TilesDataset.IMAGE_COLUMN][bag_idx].float()
             labels = batch[self.label_column][bag_idx]
             bag_labels_list.append(self.get_bag_label(labels))
             logit, attn = self(images)
@@ -204,10 +202,17 @@ class BaseDeepMILModule(LightningModule):
             bag_attn_list.append(attn.view(-1))
         bag_logits = torch.stack(bag_logits_list)
         bag_labels = torch.stack(bag_labels_list).view(-1)
-        end = timer()
-        logging.info(f"compute_bag_labels_logits_and_attn_maps took {timedelta(seconds=end-start)}")
-        logging.info(f"LoadImaged took {np.mean(batch['LoadImaged'])}")
-        logging.info(f"TileOnGridd took {np.mean(batch['TileOnGridd'])}")
+
+        # logging.info(f"{self._device}" + f"compute_bag_labels_logits_and_attn_maps took {time.time() - start}s")
+        # logging.info(f"{self._device}" + "LoadImaged took {:.2f}s per slide".format(batch['LoadImaged'][0].mean()))
+        # logging.info(
+        #     f"{self._device}" + " LoadImaged took {:.2f}s for the entire batch".format(batch['LoadImaged'][0].sum()))
+        # logging.info(f"{self._device}" + f" LoadImaged took {batch['LoadImaged'][0]}")
+        # logging.info(f"{self._device}" + " TileOnGridd took {:.2f}s per slide".format(batch['TileOnGridd'][0].mean()))
+        # logging.info(
+        #     f"{self._device}" + " TileOnGridd took {:.2f}s for the entire batch".format(batch['TileOnGridd'][0].sum())
+        # )
+        # logging.info(f"{self._device}" + f" TileOnGridd took {batch['TileOnGridd'][0]}")
         return bag_logits, bag_labels, bag_attn_list
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:

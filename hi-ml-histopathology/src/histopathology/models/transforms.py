@@ -3,6 +3,7 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
+import logging
 from pathlib import Path
 from typing import Mapping, Sequence, Union, Callable, Dict
 import torch
@@ -107,12 +108,13 @@ class TimerTransform(MapTransform):
 
     def __call__(self, data: Mapping) -> Mapping:
         if "time" not in data:
-            data["time"] = time.time()
+            data["time"] = time.time()  # type: ignore
         if self.time_key not in data:
-            data[self.time_key] = []
+            data[self.time_key] = []  # type: ignore
 
         data[self.time_key].append(time.time() - data["time"])
-        data["time"] = time.time()
+        data["time"] = time.time()  # type: ignore
+        # logging.info(f"From TimerTransform {self.time_key} took {data[self.time_key][-1]:4f} s")
         return data
 
 

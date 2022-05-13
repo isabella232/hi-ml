@@ -16,7 +16,7 @@ from health_ml.utils.bag_utils import BagDataset, multibag_collate
 from health_ml.utils.common_utils import _create_generator
 
 from histopathology.utils.wsi_utils import image_collate
-from histopathology.models.transforms import LoadTilesBatchd, TimerTransform
+from histopathology.models.transforms import LoadTilesBatchd
 from histopathology.datasets.base_dataset import SlidesDataset, TilesDataset
 
 from monai.transforms.compose import Compose
@@ -281,16 +281,14 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
     def _load_dataset(self, slides_dataset: SlidesDataset) -> Dataset:
         base_transform = Compose(
             [
-                TimerTransform(keys="no-op"),
                 LoadImaged(
                     keys=slides_dataset.IMAGE_COLUMN,
                     reader=WSIReader,
                     backend="cuCIM",
-                    dtype=np.float32,
+                    dtype=np.uint8,
                     level=self.level,
                     image_only=True,
                 ),
-                TimerTransform(keys="LoadImaged"),
                 TileOnGridd(
                     keys=slides_dataset.IMAGE_COLUMN,
                     tile_count=self.tile_count,
@@ -302,7 +300,6 @@ class SlidesDataModule(HistoDataModule[SlidesDataset]):
                     filter_mode=self.filter_mode,
                     return_list_of_dicts=True,
                 ),
-                TimerTransform(keys="TileOnGridd"),
             ]
         )
         transforms = Compose([base_transform, self.transform]).flatten() if self.transform else base_transform

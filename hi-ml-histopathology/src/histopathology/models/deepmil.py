@@ -4,7 +4,8 @@
 #  ------------------------------------------------------------------------------------------
 
 import logging
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 from pytorch_lightning.utilities.warnings import rank_zero_warn
 
 import torch
@@ -105,6 +106,21 @@ class BaseDeepMILModule(LightningModule):
         self.train_metrics = self.get_metrics()
         self.val_metrics = self.get_metrics()
         self.test_metrics = self.get_metrics()
+
+        self.prof = torch.profiler.profile(
+            schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+            on_trace_ready=torch.profiler.tensorboard_trace_handler(f"/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/logs/deepmil_2_epochs"),
+            record_shapes=True,
+            with_stack=True)
+        self.prof.start()
+
+    def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, unused: Optional[int] = 0) -> None:
+        super().on_train_batch_end(outputs, batch, batch_idx, unused)
+        self.prof.step()
+
+    # def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
+    #     super().on_before_batch_transfer(batch, dataloader_idx)
+    #     self.prof.step()
 
     def get_classifier(self) -> Callable:
         classifier_layer = nn.Linear(in_features=self.num_pooling,

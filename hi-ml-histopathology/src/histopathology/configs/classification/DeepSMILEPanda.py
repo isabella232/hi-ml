@@ -45,7 +45,7 @@ class BaseDeepSMILEPanda(BaseMIL):
         super().__init__(**default_kwargs)
         self.class_names = ["ISUP 0", "ISUP 1", "ISUP 2", "ISUP 3", "ISUP 4", "ISUP 5"]
         if not is_running_in_azure_ml():
-            self.max_epochs = 1
+            self.max_epochs = 2
 
 
 class DeepSMILETilesPanda(BaseMILTiles, BaseDeepSMILEPanda):
@@ -129,7 +129,7 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
         super().__init__(**default_kwargs)
 
     def get_dataloader_kwargs(self) -> dict:
-        return dict(num_workers=2, pin_memory=True)
+        return dict(num_workers=0, pin_memory=True)
 
     def setup(self) -> None:
         if self.encoder_type == SSLEncoder.__name__:

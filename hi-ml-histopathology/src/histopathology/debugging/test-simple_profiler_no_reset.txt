@@ -1,0 +1,30 @@
+TEST Profiler Report
+
+Action                             	|  Mean duration (s)	|Num calls      	|  Total time (s) 	|  Percentage %   	|
+---------------------------------------------------------------------------------------------------------------------------------------
+Total                              	|  -              	|_              	|  237.64         	|  100 %          	|
+---------------------------------------------------------------------------------------------------------------------------------------
+run_test_evaluation                	|  237.31         	|1              	|  237.31         	|  99.863         	|
+get_test_batch                     	|  39.173         	|6              	|  235.04         	|  98.908         	|
+fetch_next_test_batch              	|  39.173         	|6              	|  235.04         	|  98.908         	|
+evaluation_step_and_end            	|  0.44118        	|5              	|  2.2059         	|  0.92828        	|
+test_step                          	|  0.44109        	|5              	|  2.2055         	|  0.92809        	|
+evaluation_batch_to_device         	|  0.0005381      	|5              	|  0.0026905      	|  0.0011322      	|
+on_test_model_eval                 	|  0.0006058      	|1              	|  0.0006058      	|  0.00025493     	|
+on_test_batch_end                  	|  0.0001202      	|5              	|  0.00060101     	|  0.00025291     	|
+on_test_end                        	|  0.0003805      	|1              	|  0.0003805      	|  0.00016012     	|
+on_test_start                      	|  0.0002879      	|1              	|  0.0002879      	|  0.00012115     	|
+on_test_batch_start                	|  2.826e-05      	|5              	|  0.0001413      	|  5.9462e-05     	|
+test_step_end                      	|  1.018e-05      	|5              	|  5.09e-05       	|  2.1419e-05     	|
+on_test_epoch_end                  	|  2.71e-05       	|1              	|  2.71e-05       	|  1.1404e-05     	|
+teardown                           	|  2.62e-05       	|1              	|  2.62e-05       	|  1.1025e-05     	|
+on_configure_sharded_model         	|  2.5101e-05     	|1              	|  2.5101e-05     	|  1.0563e-05     	|
+on_before_accelerator_backend_setup	|  2.4e-05        	|1              	|  2.4e-05        	|  1.01e-05       	|
+on_epoch_start                     	|  2.06e-05       	|1              	|  2.06e-05       	|  8.6688e-06     	|
+setup                              	|  1.98e-05       	|1              	|  1.98e-05       	|  8.3321e-06     	|
+on_test_epoch_start                	|  1.82e-05       	|1              	|  1.82e-05       	|  7.6588e-06     	|
+on_epoch_end                       	|  1.78e-05       	|1              	|  1.78e-05       	|  7.4905e-06     	|
+prepare_data                       	|  1.07e-05       	|1              	|  1.07e-05       	|  4.5027e-06     	|
+on_test_dataloader                 	|  1.07e-05       	|1              	|  1.07e-05       	|  4.5027e-06     	|
+configure_sharded_model            	|  8.1e-06        	|1              	|  8.1e-06        	|  3.4086e-06     	|
+configure_callbacks                	|  6.2e-06        	|1              	|  6.2e-06        	|  2.609e-06      	|

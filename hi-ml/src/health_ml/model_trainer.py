@@ -161,7 +161,7 @@ def create_lightning_trainer(container: LightningContainer,
                       precision=precision,
                       sync_batchnorm=True,
                       detect_anomaly=container.detect_anomaly,
-                      profiler=PyTorchProfiler(dirpath="/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/src/histopathology/debugging", filename="pytorch_profiler.txt"),
+                      profiler=SimpleProfiler(dirpath="/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/src/histopathology/debugging", filename="tiffile_backend"),
                       resume_from_checkpoint=str(resume_from_checkpoint) if resume_from_checkpoint else None,
                       multiple_trainloader_mode=multiple_trainloader_mode,
                       **additional_args)

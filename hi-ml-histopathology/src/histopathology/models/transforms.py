@@ -114,7 +114,7 @@ class TimerTransform(MapTransform):
 
         data[self.time_key].append(time.time() - data["time"])
         data["time"] = time.time()  # type: ignore
-        # logging.info(f"From TimerTransform {self.time_key} took {data[self.time_key][-1]:4f} s")
+        # print(f"From TimerTransform {self.time_key} took {data[self.time_key][-1]:4f} s")
         return data
 
 

@@ -122,7 +122,7 @@
                 "--pl_limit_val_batches=2",
                 "--pl_limit_test_batches=2",
                 "--crossval_count=1",
-                "--batch_size=2"
+                "--batch_size=4"
             ],
             "console": "integratedTerminal",
         },

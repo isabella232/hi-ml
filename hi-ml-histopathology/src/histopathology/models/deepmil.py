@@ -3,16 +3,15 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
-import logging
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
-from pytorch_lightning.utilities.types import STEP_OUTPUT
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 from pytorch_lightning.utilities.warnings import rank_zero_warn
 
 import torch
+import logging
+import time
 from pytorch_lightning import LightningModule
 from torch import Tensor, argmax, mode, nn, optim, round, set_grad_enabled
 from torchmetrics import AUROC, F1, Accuracy, ConfusionMatrix, Precision, Recall
-import time
 
 from health_ml.utils import log_on_epoch
 from histopathology.datasets.base_dataset import TilesDataset
@@ -107,20 +106,20 @@ class BaseDeepMILModule(LightningModule):
         self.val_metrics = self.get_metrics()
         self.test_metrics = self.get_metrics()
 
-        self.prof = torch.profiler.profile(
-            schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
-            on_trace_ready=torch.profiler.tensorboard_trace_handler(f"/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/logs/deepmil_2_epochs"),
-            record_shapes=True,
-            with_stack=True)
-        self.prof.start()
+    #     self.prof = torch.profiler.profile(
+    #         schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=10),
+    #         on_trace_ready=torch.profiler.tensorboard_trace_handler(
+    #             f"/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/logs/6_workers_datalist"),
+    #         record_shapes=True,
+    #         with_stack=True)
 
-    def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, unused: Optional[int] = 0) -> None:
-        super().on_train_batch_end(outputs, batch, batch_idx, unused)
-        self.prof.step()
+    # def on_train_start(self) -> None:
+    #     super().on_train_start()
+    #     self.prof.start()
 
-    # def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
-    #     super().on_before_batch_transfer(batch, dataloader_idx)
-    #     self.prof.step()
+    # def on_train_end(self) -> None:
+    #     super().on_train_end()
+    #     self.prof.stop()
 
     def get_classifier(self) -> Callable:
         classifier_layer = nn.Linear(in_features=self.num_pooling,
@@ -205,7 +204,6 @@ class BaseDeepMILModule(LightningModule):
         # This means we can't stack them along a new axis without padding to the same length.
         # We could alternatively concatenate them, but this would require other changes (e.g. in
         # the attention layers) to correctly split the tensors by bag/slide ID.
-        # start = time.time()
         bag_labels_list = []
         bag_logits_list = []
         bag_attn_list = []
@@ -218,17 +216,6 @@ class BaseDeepMILModule(LightningModule):
             bag_attn_list.append(attn.view(-1))
         bag_logits = torch.stack(bag_logits_list)
         bag_labels = torch.stack(bag_labels_list).view(-1)
-
-        # logging.info(f"{self._device}" + f"compute_bag_labels_logits_and_attn_maps took {time.time() - start}s")
-        # logging.info(f"{self._device}" + "LoadImaged took {:.2f}s per slide".format(batch['LoadImaged'][0].mean()))
-        # logging.info(
-        #     f"{self._device}" + " LoadImaged took {:.2f}s for the entire batch".format(batch['LoadImaged'][0].sum()))
-        # logging.info(f"{self._device}" + f" LoadImaged took {batch['LoadImaged'][0]}")
-        # logging.info(f"{self._device}" + " TileOnGridd took {:.2f}s per slide".format(batch['TileOnGridd'][0].mean()))
-        # logging.info(
-        #     f"{self._device}" + " TileOnGridd took {:.2f}s for the entire batch".format(batch['TileOnGridd'][0].sum())
-        # )
-        # logging.info(f"{self._device}" + f" TileOnGridd took {batch['TileOnGridd'][0]}")
         return bag_logits, bag_labels, bag_attn_list
 
     def update_results_with_data_specific_info(self, batch: dict, results: dict) -> None:
@@ -277,6 +264,7 @@ class BaseDeepMILModule(LightningModule):
 
     def training_step(self, batch: Dict, batch_idx: int) -> Tensor:  # type: ignore
         train_result = self._shared_step(batch, batch_idx, 'train')
+
         self.log('train/loss', train_result[ResultsKey.LOSS], on_epoch=True, on_step=True, logger=True,
                  sync_dist=True)
         if self.verbose:
@@ -340,9 +328,18 @@ class TilesDeepMILModule(BaseDeepMILModule):
 
 class SlidesDeepMILModule(BaseDeepMILModule):
     """Base class for slides based deep multiple-instance learning."""
-    # def __init__(self, tile_count: int, **kwargs: Any) -> None:
-    #     self.tile_count = tile_count
+    # def __init__(self, **kwargs: Any) -> None:
     #     super().__init__(**kwargs)
+
+    #     self.tile_transform = TileOnGridd(
+    #         keys=SlideKey.IMAGE,
+    #         tile_count=self.tile_count,
+    #         tile_size=224,
+    #         random_offset=True,
+    #         background_val=255,
+    #         return_list_of_dicts=True,
+    #     )
+
     @staticmethod
     def get_bag_label(labels: Tensor) -> Tensor:
         # SlidesDataModule attributes a single label to a bag of tiles already no need to do majority voting
@@ -363,3 +360,22 @@ class SlidesDeepMILModule(BaseDeepMILModule):
                 ],
             }
         )
+
+    # def tile_on_the_fly(self, batch: Dict) -> Dict:
+    #     tiles_list = []
+    #     for slide in batch[SlideKey.IMAGE]:
+    #         tiles_list.append(self.tile_transform({SlideKey.IMAGE: slide}))
+    #     batch[SlideKey.IMAGE] = image_collate(tiles_list)[SlideKey.IMAGE].to(self._device)
+    #     return batch
+
+    # def training_step(self, batch: Dict, batch_idx: int) -> Tensor:  # type: ignore
+    #     batch = self.tile_on_the_fly(batch)
+    #     return super().training_step(batch, batch_idx)
+
+    # def validation_step(self, batch: Dict, batch_idx: int) -> BatchResultsType:  # type: ignore
+    #     batch = self.tile_on_the_fly(batch)
+    #     return super().validation_step(batch, batch_idx)
+
+    # def test_step(self, batch: Dict, batch_idx: int) -> BatchResultsType:  # type: ignore
+    #     batch = self.tile_on_the_fly(batch)
+    #     return super().test_step(batch, batch_idx)

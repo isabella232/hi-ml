@@ -129,7 +129,12 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
         super().__init__(**default_kwargs)
 
     def get_dataloader_kwargs(self) -> dict:
-        return dict(num_workers=0, pin_memory=True)
+        # num_devices = max(torch.cuda.device_count(), 1)
+        return dict(
+            num_workers=4,
+            pin_memory=True,
+            persistent_workers=True,
+            multiprocessing_context="spawn")
 
     def setup(self) -> None:
         if self.encoder_type == SSLEncoder.__name__:
@@ -140,6 +145,7 @@ class DeepSMILESlidesPanda(BaseMILSlides, BaseDeepSMILEPanda):
         return PandaSlidesDataModule(
             root_path=self.local_datasets[0],
             batch_size=self.batch_size,
+            level=self.level,
             tile_count=self.tile_count,
             transform=self.get_transform(PandaDataset.IMAGE_COLUMN),
             crossval_count=self.crossval_count,

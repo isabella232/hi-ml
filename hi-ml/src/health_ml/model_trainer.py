@@ -6,13 +6,14 @@ import logging
 import os
 import sys
 from pathlib import Path
+import time
 from typing import Any, List, Optional, Tuple, TypeVar
 
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.callbacks import GPUStatsMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.plugins import DDPPlugin
-from pytorch_lightning.profiler import AdvancedProfiler, SimpleProfiler, PyTorchProfiler
+from pytorch_lightning.profiler import PyTorchProfiler
 
 from health_azure.utils import (ENV_GLOBAL_RANK, ENV_LOCAL_RANK, ENV_NODE_RANK, RUN_CONTEXT, is_global_rank_zero,
                                 is_local_rank_zero, is_running_in_azure_ml)
@@ -161,7 +162,8 @@ def create_lightning_trainer(container: LightningContainer,
                       precision=precision,
                       sync_batchnorm=True,
                       detect_anomaly=container.detect_anomaly,
-                      profiler=SimpleProfiler(dirpath="/home/t-kbouzid/workspace/repos/hi-ml/hi-ml-histopathology/src/histopathology/debugging", filename="tiffile_backend"),
+                    #   profiler=PyTorchProfiler(profile_memory=True),
+                      profiler=container.pl_profiler,
                       resume_from_checkpoint=str(resume_from_checkpoint) if resume_from_checkpoint else None,
                       multiple_trainloader_mode=multiple_trainloader_mode,
                       **additional_args)
